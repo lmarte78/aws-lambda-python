@@ -12,6 +12,7 @@ from aws_lambda_powertools.utilities.parser.models import (
     APIGatewayEventRequestContext,
     APIGatewayEventIdentity,
 )
+from open_mpic_core.common_domain.enum.regional_internet_registry import RegionalInternetRegistry
 from pydantic import TypeAdapter, BaseModel
 
 from open_mpic_core import RemotePerspective
@@ -80,13 +81,17 @@ class TestMpicCoordinatorLambda:
     def call_remote_perspective__should_make_aws_lambda_call_with_provided_arguments_and_return_check_response(
         self, set_env_variables, mocker
     ):
-        lambda_handler, mock_client = self.mock_lambda_handler_for_lambda_invoke(mocker, self.create_successful_aioboto3_response_for_dcv_check)
+        lambda_handler, mock_client = self.mock_lambda_handler_for_lambda_invoke(
+            mocker, self.create_successful_aioboto3_response_for_dcv_check
+        )
 
         dcv_check_request = ValidCheckCreator.create_valid_dns_check_request()
         perspective_code = "us-west-1"
-        check_response = asyncio.get_event_loop().run_until_complete(lambda_handler.call_remote_perspective(
-            RemotePerspective(code=perspective_code, rir="arin"), CheckType.DCV, dcv_check_request
-        ))
+        check_response = asyncio.get_event_loop().run_until_complete(
+            lambda_handler.call_remote_perspective(
+                RemotePerspective(code=perspective_code, rir="arin"), CheckType.DCV, dcv_check_request
+            )
+        )
         assert check_response.check_passed is True
         # hijacking the value of 'details.found_at' to verify that the right arguments got passed to the call
         assert check_response.details.found_at == dcv_check_request.domain_or_ip_target
@@ -103,16 +108,20 @@ class TestMpicCoordinatorLambda:
     def call_remote_perspective__should_make_aws_lambda_call_and_handle_lambda_execution_exceptions(
         self, set_env_variables, mocker
     ):
-        lambda_handler, mock_client = self.mock_lambda_handler_for_lambda_invoke(mocker, self.create_error_aioboto3_response)
+        lambda_handler, mock_client = self.mock_lambda_handler_for_lambda_invoke(
+            mocker, self.create_error_aioboto3_response
+        )
 
         class Dummy(BaseModel):
             pass
 
         with pytest.raises(LambdaExecutionException) as exc_info:
-            asyncio.get_event_loop().run_until_complete(lambda_handler.call_remote_perspective(
-                RemotePerspective(code="us-west-1", rir="arin"), CheckType.DCV, Dummy()
-            ))
-        assert exc_info.value.args[0] == "Lambda execution error: {\"errorMessage\": \"some message\"}"
+            asyncio.get_event_loop().run_until_complete(
+                lambda_handler.call_remote_perspective(
+                    RemotePerspective(code="us-west-1", rir=RegionalInternetRegistry.ARIN), CheckType.DCV, Dummy()
+                )
+            )
+        assert exc_info.value.args[0] == 'Lambda execution error: {"errorMessage": "some message"}'
 
     def lambda_handler__should_return_400_error_and_details_given_invalid_request_body(self):
         request = ValidMpicRequestCreator.create_valid_dcv_mpic_request()
@@ -253,7 +262,7 @@ class TestMpicCoordinatorLambda:
                 return json_bytes
 
         return {"Payload": MockStreamingBody()}
-    
+
     # noinspection PyUnusedLocal
     async def create_error_aioboto3_response(self, *args, **kwargs):
         expected_response = {"errorMessage": "some message"}
@@ -263,7 +272,7 @@ class TestMpicCoordinatorLambda:
             # noinspection PyMethodMayBeStatic
             async def read(self):
                 return json_bytes
-            
+
         # See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda/client/invoke.html, "Response Structure"
         return {"Payload": MockStreamingBody(), "FunctionError": None}
 

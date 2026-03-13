@@ -55,7 +55,7 @@ class TestDcvCheckerLambda:
     ):
         mock_dcv_response = TestDcvCheckerLambda.create_dcv_check_response()
         mock_dcv_response.check_passed = False
-        mock_dcv_response.errors = [(MpicValidationError(error_type=error_type, error_message=error_message))]
+        mock_dcv_response.errors = [MpicValidationError(error_type=error_type, error_message=error_message)]
         mock_return_value = {
             "statusCode": expected_status_code,
             "headers": {"Content-Type": "application/json"},

@@ -128,7 +128,7 @@ class MpicCoordinatorLambdaHandler:
             Payload=check_request.model_dump_json(),  # AWS Lambda functions expect a JSON string for payload
         )
         response_payload = await response["Payload"].read()
-        if 'FunctionError' in response:
+        if "FunctionError" in response:
             raise LambdaExecutionException(f"Lambda execution error: {response_payload.decode('utf-8')}")
         response_payload = json.loads(response_payload)
         return self.check_response_adapter.validate_json(response_payload["body"])

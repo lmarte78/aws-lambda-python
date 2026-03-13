@@ -18,7 +18,6 @@ from open_mpic_core import DcvAcmeHttp01ValidationParameters
 
 import testing_api_client
 
-
 MPIC_REQUEST_PATH = "/mpic"
 
 
@@ -61,8 +60,9 @@ class TestDeployedMpicApi:
         # assert response body has a list of perspectives with length 2, and each element has response code 200
         perspectives_list: list[PerspectiveResponse] = mpic_response.perspectives
         assert len(perspectives_list) == request.orchestration_parameters.perspective_count
+
         assert (
-            len(list(filter(lambda perspective: perspective.check_response.check_type == CheckType.CAA, perspectives_list)))
+            len(list(filter(lambda p: p.check_response.check_type == CheckType.CAA, perspectives_list)))
             == request.orchestration_parameters.perspective_count
         )
 
@@ -109,9 +109,7 @@ class TestDeployedMpicApi:
         mpic_response = self.mpic_response_adapter.validate_json(response.text)
         assert mpic_response.is_valid is False
 
-    def api_should_return_is_valid_true_for_caa_lookup_failure_if_allow_lookup_failure_flag_is_true(
-        self, api_client
-    ):
+    def api_should_return_is_valid_true_for_caa_lookup_failure_if_allow_lookup_failure_flag_is_true(self, api_client):
         request = MpicCaaRequest(
             domain_or_ip_target="servfail.caatestsuite-dnssec.com",
             orchestration_parameters=MpicRequestOrchestrationParameters(perspective_count=3, quorum_count=2),
@@ -258,7 +256,7 @@ class TestDeployedMpicApi:
         request = MpicDcvRequest(
             domain_or_ip_target=domain_or_ip_target,
             orchestration_parameters=MpicRequestOrchestrationParameters(perspective_count=3, quorum_count=2),
-            dcv_check_parameters=DcvAcmeHttp01ValidationParameters(key_authorization=key_authorization, token=token)
+            dcv_check_parameters=DcvAcmeHttp01ValidationParameters(key_authorization=key_authorization, token=token),
         )
         print("\nRequest:\n", json.dumps(request.model_dump(), indent=4))  # pretty print request body
         response = api_client.post(MPIC_REQUEST_PATH, json.dumps(request.model_dump()))
@@ -358,7 +356,7 @@ class TestDeployedMpicApi:
     def api_should_return_200_and_failed_corroboration_given_failed_dcv_check(self, api_client):
         request = MpicDcvRequest(
             domain_or_ip_target="ifconfig.me",
-            dcv_check_parameters=DcvWebsiteChangeValidationParameters(http_token_path="/", challenge_value="test")
+            dcv_check_parameters=DcvWebsiteChangeValidationParameters(http_token_path="/", challenge_value="test"),
         )
 
         print("\nRequest:\n", json.dumps(request.model_dump(), indent=4))  # pretty print request body
