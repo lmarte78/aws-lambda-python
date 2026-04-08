@@ -5,7 +5,7 @@ An implementation of the Open MPIC API using AWS Lambda serverless functions wri
 As this API runs serverless in the cloud, it is not installed but rather deployed. The below instructions deploy the API in a user's AWS account and create a unique API endpoint for that user.
 
 ## Requirements
-All requirements for running the API are packaged and uploaded to AWS as a Lambda layer. However, the machine deploying the API must have the following requirements
+All requirements for running the API are packaged and uploaded to AWS as a Lambda layer. However, the machine deploying the API must have the following requirements:
 - The AWS CLI (https://aws.amazon.com/cli/) installed with default profile login credentials. The script currently uses the "default" profile to deploy the API to. If you have multiple AWS profiles, ensure the one you want to use for the API in listed as default in ~/.aws/credentials. You can alternatively change the AWS module parameters in main.tf to use an alternate profile.
 - Open Tofu (https://opentofu.org/) is installed. This is an open-source fork of Terraform and the configs in this project are largely interoperable between the two.
 - Python 3.11.9 which can be run with the command `python3.11` and `python3`. [pyenv](https://github.com/pyenv/pyenv) is one option for getting this specific version of python and not modifying any other python installs on the system.
