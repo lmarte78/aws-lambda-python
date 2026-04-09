@@ -28,17 +28,19 @@ classifiers = [
 dependencies = [
     #"open-mpic-core @ git+https://github.com/open-mpic/open-mpic-core-python.git@birgelee-version-bump",
     "pyyaml==6.0.2",
-    "requests==2.32.4",
+    "requests==2.33.0",
     "dnspython==2.7.0",
     "pydantic==2.11.7",
-    "aiohttp==3.13.3",
+    "aiohttp==3.13.4",
     "aws-lambda-powertools[parser]==3.15.1",
-    "open-mpic-core==6.3.0",
+    "open-mpic-core==6.4.0",
     "aioboto3~=14.3.0",
-    "black==25.1.0",
 ]
 
 [project.optional-dependencies]
+dev = [
+    "black==26.3.0"
+]
 test = [
     "pytest==8.4.1",
     "pytest-cov==6.2.1",
@@ -56,7 +58,7 @@ Source = "https://github.com/open-mpic/aws-lambda-python"
 #virtual = ".hatch"
 
 [tool.api]
-spec_version = "3.8.0"
+spec_version = "3.9.0"
 spec_repository = "https://github.com/open-mpic/open-mpic-specification"
 
 [tool.hatch]
@@ -68,11 +70,23 @@ build.targets.wheel.packages = ["src/aws_lambda_mpic"]
 skip-install = false
 type="virtual"
 path="venv"
+features = [
+    "dev",
+    "test",
+]
+installer = "pip"
 
 [tool.hatch.envs.default.env-vars]
 PIP_INDEX_URL = "https://pypi.org/simple/"
 #PIP_EXTRA_INDEX_URL = "https://test.pypi.org/simple/"  # FIXME here temporarily to test open-mpic-core packaging
 PIP_VERBOSE = "1"
+
+[tool.hatch.envs.default.scripts]
+pre-install = "python -m ensurepip"
+unit = "pytest"
+unit-html = "pytest --html=testreports/index.html" # generate html report (warning: uses an aging plugin, 11-2023)
+integration = "pytest tests/integration"
+coverage = "pytest --cov=src/aws_lambda_mpic --cov-report=term-missing --cov-report=html"
 
 [tool.hatch.envs.lambda]
 skip-install = true
@@ -112,23 +126,14 @@ deploy-no-dnssec = [
     "apply-tf-no-dnssec"
 ]
 
+[tool.hatch.envs.dev]
+template = "default"
 
 [tool.hatch.envs.test]
-skip-install = false
-features = [
-    "test",
-]
-installer = "pip"
+template = "default"
 
 #[tool.hatch.envs.test.env-vars]
 #PIP_EXTRA_INDEX_URL = "https://test.pypi.org/simple/"
-
-[tool.hatch.envs.test.scripts]
-pre-install = "python -m ensurepip"
-unit = "pytest"
-unit-html = "pytest --html=testreports/index.html" # generate html report (warning: uses an aging plugin, 11-2023)
-integration = "pytest tests/integration"
-coverage = "pytest --cov=src/aws_lambda_mpic --cov-report=term-missing --cov-report=html"
 
 [tool.hatch.envs.hatch-test]
 default-args = ["tests/unit"]
